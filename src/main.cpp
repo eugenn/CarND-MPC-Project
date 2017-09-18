@@ -94,11 +94,14 @@ int main() {
 
                     cout << "size " << ptsx.size() << endl;
 
-                    double px = j[1]["x"];
-                    double py = j[1]["y"];
+                    const double px = j[1]["x"];
+                    const double py = j[1]["y"];
 
-                    double psi = j[1]["psi"];
-                    double v = j[1]["speed"];
+                    const double psi = j[1]["psi"];
+                    const double v = j[1]["speed"];
+
+                    const double delta = j[1]["steering_angle"];
+                    const double a = j[1]["throttle"];
 
                     for (int i = 0; i < ptsx.size(); i++) {
 
@@ -124,15 +127,21 @@ int main() {
                     //orientation error
                     double epsi = -atan(coeffs[1]);
 
+
+                    const double latency = 0.1;  // 100 ms
                     const double Lf = 2.67;
+
+                    const double cur_v = v + a * latency;
+                    const double cur_cte = cte + v * sin(epsi) * latency;
+                    const double cur_epsi = epsi + v * (-delta) / Lf * latency;
 
                     Eigen::VectorXd state(6);
 
                     // state vector
-                    state << 0, 0, 0, v, cte, epsi;
+                    // current values for: px, py, psi = 0
+                    state << 0, 0, 0, cur_v, cur_cte, cur_epsi;
 
                     vector<double> vars = mpc.Solve(state, coeffs);
-
 
                     json msgJson;
 

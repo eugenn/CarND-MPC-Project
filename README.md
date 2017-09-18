@@ -59,23 +59,23 @@ H = 1
 
 Latency
 ---
-An additional complication of this project consists in taking delayed actuations into account. This latency is actually introduced before the actuations are sent back to the simulator.
+An additional complication of this project consists in taking delayed actuations into account. This latency is actually introduced before the actuations are sent back to the simulator. (main.cpp 134-136)
 This is equivalent to looking ahead while driving, realizing you can't do that much about what's immediately in front of you at highway speeds.
 One of the way to solve the problem is to incorporate the latency in the basic model by predicting the future car state after 100 ms time. The current state of the car is now the state after 100 ms and it is the state that the optimization will be conducted for.
 
 ```
-double Lf = 2.67;
-double dt = 0.1;
-px = px + v*cos(psi)*dt;
-py = py + v*sin(psi)*dt;
-psi = psi + v*delta/Lf*dt;
-v = v + acceleration*dt;
+const double latency = 0.1;  // 100 ms
+const double Lf = 2.67;
+
+const double cur_v = v + a * latency;
+const double cur_cte = cte + v * sin(epsi) * latency;
+const double cur_epsi = epsi + v * (-delta) / Lf * latency;
 ``` 
 
 The prediction horizon
 ---
-The time T=N*dt defines the prediction horizon. Short prediction horizons lead to more responsive controlers, but are less accurate and can suffer from instabilities when chosen too short. Long prediction horizons generally lead to smoother controls.
-So I found that optimal for me was N = 10, dt = 0.1 
+The time T=N*dt defines the prediction horizon. Short prediction horizons lead to more responsive controlers, but are less accurate and can suffer from instabilities when chosen too short. Long prediction horizons generally lead to smoother controls but it is require more CPU resources.
+So I found that optimal for me is N = 10(±2), dt = 0.1 
 
 Polynomial Fitting and Preprocessing
 ---
