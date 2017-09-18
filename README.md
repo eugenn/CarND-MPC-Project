@@ -47,21 +47,30 @@ Additionally added penalty for steering and speed. This component has added stab
 
 Ultimately here are the weights I ended up with:
 ```
-A = 4000
-B = 3000
-C = 10
-D = 5
+A = 2000
+B = 2000
+C = 1
+D = 1000
 E = 5
-F = 1500
-G = 1e6
+F = 300
+G = 1
 H = 1
 ```
 
 Latency
 ---
-An additional complication of this project consists in taking delayed actuations into account. We account for latency by assuming the current car drifts at the current speed, heading, and rate of turn for the entire interval forward. 
-These become the initial state for the model. The algorithm then selects an optimal sequence of steering and throttle adjustments, 100 times a second, for that time forward. 
-This is equivalent to looking ahead while driving, realizing you can't do that much about what's immediately in front of you at highway speeds. 
+An additional complication of this project consists in taking delayed actuations into account. This latency is actually introduced before the actuations are sent back to the simulator.
+This is equivalent to looking ahead while driving, realizing you can't do that much about what's immediately in front of you at highway speeds.
+One of the way to solve the problem is to incorporate the latency in the basic model by predicting the future car state after 100 ms time. The current state of the car is now the state after 100 ms and it is the state that the optimization will be conducted for.
+
+```
+double Lf = 2.67;
+double dt = 0.1;
+px = px + v*cos(psi)*dt;
+py = py + v*sin(psi)*dt;
+psi = psi + v*delta/Lf*dt;
+v = v + acceleration*dt;
+``` 
 
 The prediction horizon
 ---
@@ -70,8 +79,8 @@ So I found that optimal for me was N = 10, dt = 0.1
 
 Polynomial Fitting and Preprocessing
 ---
-
 The waypoints are preprocessed by transforming them to the vehicle's perspective . This simplifies the process to fit a polynomial to the waypoints because the vehicle's x and y coordinates are now at the origin (0, 0) and the orientation angle is also zero.
+
 ```
 for (int i = 0; i < ptsx.size(); i++) {
 
@@ -86,7 +95,7 @@ Also was used the 3rd order polynomial as an estimate of the current road curve 
  
 Simulation
 ---
-The YouTube [video](https://www.youtube.com/watch?v=PqG4hMNHUgg) seen here shows our car driving around the track with a speed limited to 75mph. The yellow lines indicate the "waypoints" from the simulator showing a preferred path forward. The green lines and dots show an optimal path predicted by our model controller.  
+The YouTube [video](https://www.youtube.com/watch?v=kMN5zAqm-lc) seen here shows our car driving around the track with a speed limited to 75mph. The yellow lines indicate the "waypoints" from the simulator showing a preferred path forward. The green lines and dots show an optimal path predicted by our model controller.  
 
 ## Dependencies
 

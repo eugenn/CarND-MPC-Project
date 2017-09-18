@@ -21,7 +21,7 @@ double dt = 0.1;
 const double Lf = 2.67;
 double ref_cte = 0.0;
 double ref_epsi = 0.0;
-double ref_v = 75.0;
+double ref_v = 85.0;
 
 size_t x_start = 0;
 size_t y_start = x_start + N;
@@ -51,20 +51,20 @@ public:
         fg[0] = 0;
 
         for (int i = 0; i < N; i++) {
-            fg[0] += 4000 * CppAD::pow(vars[cte_start + i] - ref_cte, 2);
-            fg[0] += 3000 * CppAD::pow(vars[epsi_start + i] - ref_epsi, 2);
-            fg[0] += 10 * CppAD::pow(vars[v_start + i] - ref_v, 2);
+            fg[0] += 2000 * CppAD::pow(vars[cte_start + i] - ref_cte, 2);
+            fg[0] += 2000 * CppAD::pow(vars[epsi_start + i] - ref_epsi, 2);
+            fg[0] += 1 * CppAD::pow(vars[v_start + i] - ref_v, 2);
         }
 
         for (int i = 0; i < N - 1; i++) {
-            fg[0] += 5 * CppAD::pow(vars[d_start + i], 2);
+            fg[0] += 1000 * CppAD::pow(vars[d_start + i], 2);
             fg[0] += 5 * CppAD::pow(vars[a_start + i], 2);
             // try adding penalty for speed + steer
-            fg[0] += 1500 * CppAD::pow(vars[d_start + i] * vars[v_start + i], 2);
+            fg[0] += 300 * CppAD::pow(vars[d_start + i] * vars[v_start + i], 2);
         }
 
         for (int i = 0; i < N - 2; i++) {
-            fg[0] += 1e6 * CppAD::pow(vars[d_start + i + 1] - vars[d_start + i], 2);
+            fg[0] += 2 * CppAD::pow(vars[d_start + i + 1] - vars[d_start + i], 2);
             fg[0] += 1 * CppAD::pow(vars[a_start + i + 1] - vars[a_start + i], 2);
         }
 
@@ -74,7 +74,6 @@ public:
         fg[1 + v_start] = vars[v_start];
         fg[1 + cte_start] = vars[cte_start];
         fg[1 + epsi_start] = vars[epsi_start];
-
 
         // The rest of the constraints
         for (int t = 0; t < N - 1; t++) {
@@ -98,8 +97,8 @@ public:
             AD<double> delta0 = vars[d_start + t];
             AD<double> a0 = vars[a_start + t];
 
-            AD<double> f0 = coeffs[0] + coeffs[1] * x0 + coeffs[2] * x0 * x0 + coeffs[3] * x0 * x0 * x0;
-            AD<double> psides0 = CppAD::atan(3 * coeffs[3] * x0 * x0 + 2 * coeffs[2] * x0 + coeffs[1]);
+            AD<double> f0 = coeffs[0] + coeffs[1] * x0 + coeffs[2] * CppAD::pow(x0, 2) + coeffs[3] * CppAD::pow(x0, 3);
+            AD<double> psides0 = CppAD::atan(coeffs[1] + 2 * coeffs[2] * x0 + 3 * coeffs[3] * CppAD::pow(x0,2));
 
             // Here's `x` to get you started.
             // The idea here is to constraint this value to be 0.
@@ -107,7 +106,6 @@ public:
             // NOTE: The use of `AD<double>` and use of `CppAD`!
             // This is also CppAD can compute derivatives and pass
             // these to the solver.
-
             fg[2 + x_start + t] = x1 - (x0 + v0 * CppAD::cos(psi0) * dt);
             fg[2 + y_start + t] = y1 - (y0 + v0 * CppAD::sin(psi0) * dt);
             fg[2 + psi_start + t] = psi1 - (psi0 - v0 * delta0 / Lf * dt);
@@ -127,7 +125,7 @@ MPC::~MPC() {}
 
 vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
     bool ok = true;
-//    size_t i;
+
     typedef CPPAD_TESTVECTOR(double) Dvector;
 
     double x = state[0];
@@ -151,13 +149,11 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
     Dvector vars_lowerbound(n_vars);
     Dvector vars_upperbound(n_vars);
 
-    // TODO: Set lower and upper limits for variables.
-
+    // Set lower and upper limits for variables.
     for (int i = 0; i < d_start; i++) {
         vars_lowerbound[i] = -1.0e19;
         vars_upperbound[i] = 1.0e19;
     }
-
 
     for (int i = d_start; i < a_start; i++) {
         vars_lowerbound[i] = -1.0;
@@ -178,7 +174,6 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
         constraints_lowerbound[i] = 0;
         constraints_upperbound[i] = 0;
     }
-
 
     constraints_lowerbound[x_start] = x;
     constraints_lowerbound[y_start] = y;
