@@ -95,7 +95,7 @@ Also was used the 3rd order polynomial as an estimate of the current road curve 
  
 Simulation
 ---
-The YouTube [video](https://www.youtube.com/watch?v=kMN5zAqm-lc) seen here shows our car driving around the track with a speed limited to 75mph. The yellow lines indicate the "waypoints" from the simulator showing a preferred path forward. The green lines and dots show an optimal path predicted by our model controller.  
+The YouTube [video](https://www.youtube.com/watch?v=kMN5zAqm-lc) seen here shows our car driving around the track with a speed limited to 85mph. The yellow lines indicate the "waypoints" from the simulator showing a preferred path forward. The green lines and dots show an optimal path predicted by our model controller.  
 
 ## Dependencies
 
