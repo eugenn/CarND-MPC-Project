@@ -21,7 +21,7 @@ double dt = 0.1;
 const double Lf = 2.67;
 double ref_cte = 0.0;
 double ref_epsi = 0.0;
-double ref_v = 85.0;
+double ref_v = 100.0;
 
 size_t x_start = 0;
 size_t y_start = x_start + N;
@@ -160,6 +160,7 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
         vars_upperbound[i] = 1.0;
     }
 
+	// The range of values δ is set to [-25, 25] in radians
     for (int i = a_start; i < n_vars; i++) {
         vars_lowerbound[i] = -0.436332 * Lf;
         vars_upperbound[i] = 0.436332 * Lf;

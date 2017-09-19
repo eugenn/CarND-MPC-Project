@@ -130,7 +130,9 @@ int main() {
 
                     const double latency = 0.1;  // 100 ms
                     const double Lf = 2.67;
-
+                    const double cur_px = 0.0 + v * latency;
+                    const double cur_py = 0.0;
+                    const double cur_psi = 0.0 + v * (-delta) / Lf * latency;
                     const double cur_v = v + a * latency;
                     const double cur_cte = cte + v * sin(epsi) * latency;
                     const double cur_epsi = epsi + v * (-delta) / Lf * latency;
@@ -139,7 +141,7 @@ int main() {
 
                     // state vector
                     // current values for: px, py, psi = 0
-                    state << 0, 0, 0, cur_v, cur_cte, cur_epsi;
+                    state << cur_px, cur_py, cur_psi, cur_v, cur_cte, cur_epsi;
 
                     vector<double> vars = mpc.Solve(state, coeffs);
 
